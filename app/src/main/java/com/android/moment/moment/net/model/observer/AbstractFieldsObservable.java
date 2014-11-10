@@ -78,28 +78,21 @@ public abstract class AbstractFieldsObservable implements FieldsObservable {
     @Override
     public synchronized final <E> void notifyFieldObservers(final Field<E> field, final E data) {
 
-        System.out.println("2");
         List<WeakObserverReference> fieldsList = fieldObserverMap.get(field);
         //if there are Observers for this field, we notify them
         if (fieldsList != null) {
-            System.out.println("3");
 
             for (final WeakObserverReference weakReference : fieldsList) {
                 final FieldObserver temp = weakReference.get();
 
                 if (temp != null) {
-                    System.out.println("4");
-
                     uiThreadHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            System.out.println("5");
                             temp.updateData(field, data);
                         }
                     });
                 } else {
-                    System.out.println("6");
-
                     toRemove.add(weakReference);
                 }
             }

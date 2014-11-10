@@ -8,7 +8,6 @@ import com.android.moment.moment.net.core.message.PushMessage;
 import com.android.moment.moment.net.model.ObservableList;
 import com.android.moment.moment.net.model.ObservableListImpl;
 import com.android.moment.moment.net.model.Profile;
-import com.android.moment.moment.net.model.component.ResourcePath;
 import com.android.moment.moment.net.ws.manager.ProfileManager;
 
 import org.json.JSONArray;
@@ -27,9 +26,8 @@ public class ProfileListHandler extends ModelMessageHandler<ObservableList<Profi
 
     private ProfileManager profileManager;
 
-    public ProfileListHandler(ResourcePath userRes) {
-        ResourcePath boardRes = new ResourcePath(ResourcePath.Resource.BOARDS, userRes);
-        model = new ObservableListImpl<Profile>(boardRes);
+    public ProfileListHandler(String id) {
+        model = new ObservableListImpl<Profile>(id);
     }
 
     public void setProfileManager(ProfileManager profileManager) {
@@ -38,8 +36,7 @@ public class ProfileListHandler extends ModelMessageHandler<ObservableList<Profi
 
     @Override
     public Message prepareMessage() {
-        ResourcePath res = model.getResourcePath();
-        return new Message.Builder().cmd(Message.Command.READ).res(res).build();
+        return new Message.Builder().cmd(Message.Command.READ).id(model.getId()).build();
     }
 
     @Override
@@ -53,8 +50,7 @@ public class ProfileListHandler extends ModelMessageHandler<ObservableList<Profi
         for (int i = 0; i < list.length(); i++) {
 
             JSONObject profileObject = list.getJSONObject(i);
-            ResourcePath res = new ResourcePath(profileObject.getString("name"), ResourcePath.Resource.PROFILES, null);
-            Profile profile = profileManager.getLocalProfile(res);
+            Profile profile = profileManager.getLocalProfile(profileObject.getString("id"));
             profile.setName(profileObject.getString("name"));
             profile.setAvatar(profileObject.getString("avatar"));
             profiles.add(profile);
@@ -73,14 +69,13 @@ public class ProfileListHandler extends ModelMessageHandler<ObservableList<Profi
 
 //        if (pushMessage.getMasterCmd().equals(Message.Command.CREATE)) {
 
-            JSONObject body = pushMessage.getBody();
+        JSONObject body = pushMessage.getBody();
 
-            Profile profile = profileManager.getLocalProfile(new ResourcePath(body.getString("id"),
-                    ResourcePath.Resource.PROFILES));
-            profile.setName(body.getString("name"));
-            profile.setAvatar(body.getString("avatar"));
+        Profile profile = profileManager.getLocalProfile(body.getString("id"));
+        profile.setName(body.getString("name"));
+        profile.setAvatar(body.getString("avatar"));
 
-            model.add(profile);
+        model.add(profile);
 //        }
         return model;
     }

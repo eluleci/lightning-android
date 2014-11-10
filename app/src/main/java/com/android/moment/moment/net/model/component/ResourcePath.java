@@ -277,7 +277,6 @@ public class ResourcePath implements Serializable {
          * @return the Resource object if found, null otherwise
          */
         public static Resource parseResource(String resourceType) {
-            System.out.println(resourceType);
             for (Resource r : Resource.values()) {
                 if (resourceType.contains(r.toString())) {
                     return r;

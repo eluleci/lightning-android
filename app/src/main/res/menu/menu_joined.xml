@@ -2,11 +2,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
     <item
-        android:id="@+id/action_join"
-        android:title="@string/action_join"
+        android:id="@+id/action_leave"
+        android:title="@string/action_leave"
         android:showAsAction="always" />
     <item
         android:id="@+id/action_pick"
         android:title="@string/action_pick"
-        android:showAsAction="always" />
+        android:showAsAction="always"
+        android:icon="@android:drawable/ic_menu_edit"/>
 </menu>

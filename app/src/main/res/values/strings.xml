@@ -2,7 +2,8 @@
 <resources>
 
     <string name="app_name">Moment</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_join">Join</string>
+    <string name="action_leave">Leave</string>
+    <string name="action_pick">Pick</string>
 
 </resources>

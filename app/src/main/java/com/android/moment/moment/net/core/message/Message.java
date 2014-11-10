@@ -17,14 +17,14 @@ public class Message implements Parameters {
     private int rid = 0;
     private final Command cmd;
     private final MessageOptions opts;
-    private final ResourcePath res;
+    private final String id;
     private final JSONObject body;
     private final JSONObject metadata;
 
     public Message(Builder builder) {
         this.cmd = builder.cmd;
         this.opts = builder.opts;
-        this.res = builder.res;
+        this.id = builder.id;
         this.body = builder.body;
         this.metadata = builder.metadata;
     }
@@ -47,8 +47,8 @@ public class Message implements Parameters {
         return cmd;
     }
 
-    public ResourcePath getRes() {
-        return res;
+    public String getId() {
+        return id;
     }
 
     public JSONObject getBody() {
@@ -69,14 +69,7 @@ public class Message implements Parameters {
         try {
             if (rid != 0) message.put(RID, rid);
             if (cmd != null) message.put(CMD, cmd.toString());
-            if (res != null) {
-                if (cmd == Command.MARK_SEEN || cmd == Command.MARK_READ || cmd == Command.SET
-                        || cmd == Command.UPDATE || cmd == Command.CHANGE_PASSWORD) {
-                    message.put(RES, res.toString() + "@" + res.getVersion());
-                } else {
-                    message.put(RES, res.toString());
-                }
-            }
+            if (id != null) message.put(RES, id);
             if (opts != null) message.put(OPTS, opts.js());
             if (body != null) message.put(BODY, body);
             if (metadata != null) message.put(METADATA, metadata);
@@ -103,7 +96,7 @@ public class Message implements Parameters {
 
         private Command cmd;
         private MessageOptions opts;
-        private ResourcePath res;
+        private String id;
         private JSONObject body;
         private JSONObject metadata;
 
@@ -117,8 +110,8 @@ public class Message implements Parameters {
             return this;
         }
 
-        public Builder res(ResourcePath res) {
-            this.res = res;
+        public Builder id(String id) {
+            this.id = id;
             return this;
         }
 

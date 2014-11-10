@@ -31,7 +31,8 @@ public class WebSocketClient {
 
     //////
 
-    private final String wsuri = "ws://10.0.2.137:8080/ws";
+    private final String wsuri = "ws://192.168.1.15:8080/ws";
+//    private final String wsuri = "ws://10.0.2.137:8080/ws";
 
     private static WebSocketClient instance;
 

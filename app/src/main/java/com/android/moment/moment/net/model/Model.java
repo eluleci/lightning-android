@@ -12,7 +12,7 @@ public interface Model extends FieldsObservable {
      *
      * @return the unique resourcePath of this model object, corresponding to the object on server.
      */
-    public ResourcePath getResourcePath();
+    public String getId();
     public static final Field<Model> DELETED = new Field<Model>("deleted");
 
     public void setSubscriptionId(String id);

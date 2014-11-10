@@ -3,15 +3,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
+    <com.android.moment.moment.views.CustomImageView
         android:id="@+id/avatar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:scaleType="center"
+        android:background="#c2c2c2" />
 
-    <TextView
+    <com.android.moment.moment.views.CustomTextView
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_gradient"
         android:layout_alignParentBottom="true"
         android:textColor="#ffffff"
         android:shadowColor="#000000"

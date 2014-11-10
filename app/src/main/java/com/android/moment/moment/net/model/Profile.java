@@ -1,7 +1,5 @@
 package com.android.moment.moment.net.model;
 
-import com.android.moment.moment.net.model.component.Avatar;
-import com.android.moment.moment.net.model.component.ResourcePath;
 import com.android.moment.moment.net.model.observer.AbstractFieldsObservable;
 import com.android.moment.moment.net.model.observer.Field;
 import com.android.moment.moment.net.model.observer.FieldObserver;
@@ -10,18 +8,14 @@ import java.io.Serializable;
 
 public class Profile extends AbstractFieldsObservable implements Model, Serializable {
 
+    public static final Field<String> ID = new Field<String>("id");
     public static final Field<String> NAME = new Field<String>("name");
     public static final Field<String> AVATAR = new Field<String>("avatar");
 
-    private final ResourcePath res;
-
+    private String id;
     private String name;
     private String avatar;
     private String subscriptionId;
-
-    public Profile(ResourcePath res) {
-        this.res = res;
-    }
 
     @Override
     public void onAddFieldObserver(Field field, FieldObserver fieldObserver) {
@@ -38,6 +32,16 @@ public class Profile extends AbstractFieldsObservable implements Model, Serializ
     }
 
     //********************* SETTERS *********************
+
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void setName(String name) {
         this.name = name;
         this.notifyFieldObservers(NAME, name);
@@ -49,6 +53,7 @@ public class Profile extends AbstractFieldsObservable implements Model, Serializ
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+        this.notifyFieldObservers(AVATAR, avatar);
     }
 
     public String getAvatar() {
@@ -56,10 +61,6 @@ public class Profile extends AbstractFieldsObservable implements Model, Serializ
     }
 
     //********************* GETTERS *********************
-    @Override
-    public ResourcePath getResourcePath() {
-        return res;
-    }
 
     @Override
     public void setSubscriptionId(String id) {

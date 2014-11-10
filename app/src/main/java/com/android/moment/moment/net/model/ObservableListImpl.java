@@ -3,7 +3,6 @@ package com.android.moment.moment.net.model;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.android.moment.moment.net.model.component.ResourcePath;
 import com.android.moment.moment.net.model.observer.AbstractFieldsObservable;
 import com.android.moment.moment.net.model.observer.Field;
 import com.android.moment.moment.net.model.observer.FieldObserver;
@@ -21,7 +20,7 @@ public class ObservableListImpl<E> extends AbstractFieldsObservable implements O
     private boolean isReceived;
     private Handler uiHandler;
     private final List<E> listComponent;
-    private final ResourcePath resourcePath;
+    private final String id;
     private String subscriptionId;
     private boolean ascending;
     private JSONObject metadata;
@@ -29,9 +28,9 @@ public class ObservableListImpl<E> extends AbstractFieldsObservable implements O
     /**
      * Constructor uses ArrayList by default.
      */
-    public ObservableListImpl(ResourcePath resourcePath) {
+    public ObservableListImpl(String id) {
+        this.id = id;
         listComponent = new ArrayList<E>();
-        this.resourcePath = resourcePath;
         uiHandler = new Handler(Looper.getMainLooper());
     }
 
@@ -61,8 +60,8 @@ public class ObservableListImpl<E> extends AbstractFieldsObservable implements O
     }
 
     @Override
-    public ResourcePath getResourcePath() {
-        return resourcePath;
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -87,7 +86,6 @@ public class ObservableListImpl<E> extends AbstractFieldsObservable implements O
             @Override
             public void run() {
                 boolean b = listComponent.add(object);
-                System.out.println("1");
                 notifyFieldObservers(LIST, ObservableListImpl.this);
             }
         });

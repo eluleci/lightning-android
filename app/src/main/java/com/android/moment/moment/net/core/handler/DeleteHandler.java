@@ -9,15 +9,15 @@ import org.json.JSONException;
 
 public abstract class DeleteHandler extends MessageHandler<ResourcePath> {
 
-    private ResourcePath resourcePath;
+    private String id;
 
-    public DeleteHandler(ResourcePath resourcePath ){
-        this.resourcePath = resourcePath;
+    public DeleteHandler(String id){
+        this.id = id;
     }
 
     @Override
     public Message prepareMessage() {
-        return new Message.Builder().cmd(Message.Command.DELETE).res(resourcePath).build();
+        return new Message.Builder().cmd(Message.Command.DELETE).id(id).build();
     }
 
     @Override
