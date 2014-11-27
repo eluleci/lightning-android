@@ -1,11 +1,6 @@
-package com.android.moment.moment.network;
+package com.android.moment.moment.lightning;
 
 import android.util.Log;
-
-import com.android.moment.moment.net.core.handler.MessageHandler;
-import com.android.moment.moment.net.core.message.Message;
-import com.android.moment.moment.net.core.message.PushMessage;
-import com.android.moment.moment.net.model.component.ResourcePath;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,10 +24,9 @@ public class WebSocketClient {
     private Map<Integer, MessageHandler> messageQueue = new HashMap<Integer, MessageHandler>();
     private Map<String, MessageHandler> pushMessageSubscribers = new HashMap<String, MessageHandler>();
 
-    //////
-
-    private final String wsuri = "ws://192.168.1.15:8080/ws";
-//    private final String wsuri = "ws://10.0.2.137:8080/ws";
+    //    private final String wsuri = "ws://192.168.1.15:8080/ws";
+        private final String wsuri = "ws://10.0.2.137:8080/ws";
+//    private final String wsuri = "ws://192.168.43.76:8080/ws";
 
     private static WebSocketClient instance;
 
@@ -54,48 +48,27 @@ public class WebSocketClient {
         connect();
     }
 
+    public void connect() {
 
-    private void connect() {
-
-        Log.d(TAG, "Connecting...");
+        if (mConnection.isConnected()) {
+            Log.d(TAG, "Connection is already open.");
+            return;
+        }
 
         try {
+            Log.d(TAG, "Connecting...");
             mConnection.connect(wsuri, new WebSocketHandler() {
 
                 @Override
                 public void onOpen() {
                     connectionStatusListener.onStatusChanged(true);
-                    Log.d(TAG, "Status: Connected to " + wsuri);
+                    Log.d(TAG, "Connected established to " + wsuri);
                 }
 
                 @Override
                 public void onTextMessage(String payload) {
-                    Log.d(TAG, "Got message: " + payload);
-
+                    Log.d(TAG, "Message received: " + payload);
                     onTextMessageReceived(payload);
-
-                    /*Message message = new Message();
-                    try {
-                        JSONObject jsonObject = new JSONObject(payload);
-                        if (jsonObject.has("rid"))
-                            message.setRid(jsonObject.getInt("rid"));
-                        if (jsonObject.has("status"))
-                            message.setStatus(jsonObject.getInt("status"));
-                        if (jsonObject.has("body"))
-                            message.setBody(jsonObject.getJSONObject("body"));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    Log.d(TAG, "Converted to object : " + message);
-
-                    if (message.getRid() == 0) {
-                        Log.d(TAG, "this is push message");
-                    }
-                    if (message.getRid() != 0 && messageHandlers.containsKey(message.getRid())) {
-                        Log.d(TAG, "message handler found with rid: " + message.getRid());
-
-                        onMessageReceived(message);
-                    }*/
                 }
 
                 @Override
@@ -105,9 +78,19 @@ public class WebSocketClient {
                 }
             });
         } catch (WebSocketException e) {
-
             Log.d(TAG, e.toString());
         }
+    }
+
+    public boolean isConnected() {
+        return mConnection.isConnected();
+    }
+
+    public void disconnect() {
+        // sending disconnect message
+        Log.d(TAG, "Disconnecting.");
+        Message message = new Message.Builder().cmd(Message.Command.DISCONNECT).build();
+        mConnection.sendTextMessage(message.toString());
     }
 
     /**
@@ -120,18 +103,21 @@ public class WebSocketClient {
             throw new IllegalArgumentException("Parameter requestMessageHandler must not be null.");
         }
 
-        // getting prepared message from handler and generating tx for message
+        // getting prepared message from handler
         Message message = requestMessageHandler.prepareMessage();
         if (message == null) {
             Log.e(TAG, "Handlers message is null while sending message. "
                     + requestMessageHandler.getClass().toString());
             return;
         }
-//        message.setRid(generateNextTx());
+
+        // generating tx for message
         message.setRid(new BigInteger(130, random).intValue());
 
-        // mapping message handler with tx value and sending message
+        // mapping message handler with tx value
         messageQueue.put(message.getRid(), requestMessageHandler);
+
+        // sending message
         mConnection.sendTextMessage(message.toString());
 
         Log.d(TAG, "Sending a request message: " + message.toString());
@@ -143,7 +129,7 @@ public class WebSocketClient {
             final JSONObject message = new JSONObject(payload);
             Runnable runnable;
             if (message.has("rid")) {
-                // If a message has field 'tx', it means that this is a respond
+                // If a message has field 'rid', it means that this is a respond
                 // to a request that is sent by this client. First we find the
                 // message handler which owns the message and then we check for
                 // error and notify the message handler. Finally we remove the
@@ -152,7 +138,7 @@ public class WebSocketClient {
                     @Override
                     public void run() {
                         try {
-//                            Log.v(TAG, "MESSAGE RECEIEVED: " + message.toString(4));
+                            Log.v(TAG, "MESSAGE RECEIEVED: " + message.toString(4));
                             handleResponse(message);
                         } catch (JSONException e) {
                             Log.e(TAG, e.getLocalizedMessage(), e);
@@ -161,10 +147,10 @@ public class WebSocketClient {
                 };
 
             } else {
-                // If there is no 'cid' or 'tx' in the message, it means that this is a push message
-                // So we first check the subscription id of it and handle errors if the
-                // subscription id is not valid. Then we find the MessageHandler which has
-                // subscribed with this subscription id. If everything goes well, we just simply
+                // If there is no 'rid' in the message, it means that this is a push message
+                // So we first check the subscription res of it and handle errors if the
+                // subscription res is not valid. Then we find the MessageHandler which has
+                // subscribed with this subscription res. If everything goes well, we just simply
                 // create the PushMessage object from the values we get and notify the handler.
                 runnable = new Runnable() {
 
@@ -176,16 +162,11 @@ public class WebSocketClient {
                         } catch (JSONException e) {
                             Log.e(TAG, e.getLocalizedMessage(), e);
                         }
-
                     }
-
                 };
             }
-//            if (multithreaded) {
-//                new Thread(runnable).start();
-//            } else {
+//            new Thread(runnable).start();
             runnable.run();
-//            }
 
         } catch (JSONException e) {
             Log.e(TAG, e.getLocalizedMessage(), e);
@@ -194,7 +175,7 @@ public class WebSocketClient {
 
 
     /**
-     * handles a message as response of a request, particularly it has field RID
+     * handles the response of a request
      *
      * @param message the message from server
      * @throws org.json.JSONException
@@ -204,71 +185,44 @@ public class WebSocketClient {
         MessageHandler messageHandler = messageQueue.get(rid);
 
         if (messageHandler == null) {
-            Log.e(TAG, "MessageHandler with tx " + rid + " couldn't be found.");
+            Log.e(TAG, "MessageHandler with rid " + rid + " couldn't be found.");
             return;
         }
 
         if (message.has("error")) { // handling error
 
-//            JSONObject errorObject = message.getJSONObject(ERROR);
-//            int code = errorObject.getInt(CODE);
-//            String errorMessage = errorObject.getString(MESSAGE);
+            JSONObject errorObject = message.getJSONObject("error");
+            int code = errorObject.getInt("code");
+            String errorMessage = errorObject.getString("message");
 
-//            MessageError error = new MessageError(code, errorMessage);
-//            Log.e(TAG, "Error returned. Message was " + messageHandler.prepareMessage() + "   Error:" + error.toString());
-            Log.e(TAG, "Error returned. Message was " + messageHandler.prepareMessage() + "   Error:" + message.toString());
+            MessageError error = new MessageError(code, errorMessage);
+            Log.e(TAG, "Error returned. Message was " + messageHandler.prepareMessage() + "   Error:" + error.toString());
 
-//            messageHandler.onError(messageHandler, error);
-            messageHandler.onError(messageHandler, null);
+            messageHandler.onError(messageHandler, error);
 
         } else { // getting message
 
             Message.Builder messageBuilder = new Message.Builder();
 
-            // if there is opts, add to message builder
-            /*if (message.has(OPTS)) {
-                JSONObject opts = message.getJSONObject(OPTS);
-                ResponseOptions messageOptions = new ResponseOptions();
+            // if message has res , add it to subscribers list
+            if (message.has("res")) {
+                String res = message.getString("res");
 
-                // if message has subscription , add it to subscribers list
-                if (opts.has(SUBSCRIPTION)) {
-                    String subscription = opts.getString(SUBSCRIPTION);
-
-                    // sometimes subscription tag comes with the string value "null", or it is simply the answer
-                    if (!subscription.equals("null") && subscription != null && !(opts.has(CMD) &&
-                            Message.Command.valueOf(opts.getString(CMD)) != Message.Command.UNSUBSCRIBE)) {
-                        bindSubscription(subscription, messageHandler);
-                        messageOptions.setSubscription(subscription);
-
-                        Log.d(TAG, "Handler is subscribed with id " + subscription);
-                    }
-                }
-
-                messageBuilder.opts(messageOptions);
-            }*/
-
-            // if message has subscription , add it to subscribers list
-            if (message.has("subscription")) {
-                String subscription = message.getString("subscription");
-
-                // sometimes subscription tag comes with the string value "null", or it is simply the answer
-                if (!subscription.equals("null") && subscription != null) {
-                    messageHandler.setSubscriptionId(subscription);
-                    bindSubscription(subscription, messageHandler);
+                // sometimes res comes with the string value "null", or it is simply the answer
+                if (res != null && !res.equals("null")) {
+                    messageBuilder.res(res);
+                    messageHandler.setSubscriptionId(res);
+                    bindSubscription(res, messageHandler);
                 }
             }
 
-            // if there is body, add to message builder
+            if (message.has("status")) {
+                messageBuilder.status(message.getInt("status"));
+            }
+
             if (message.has("body")) {
-                JSONObject body = message.getJSONObject("body");
-                messageBuilder.body(body);
+                messageBuilder.body(message.getJSONObject("body"));
             }
-
-            // if there is metadata, add to message builder
-            /*if (message.has(METADATA)) {
-                JSONObject metadata = message.getJSONObject(METADATA);
-                messageBuilder.metadata(metadata);
-            }*/
 
             if (message.has("cmd")) {
                 Message.Command masterCmd = Message.Command.parseCommand(message.getString("cmd"));
@@ -291,28 +245,27 @@ public class WebSocketClient {
     private void handlePushMessage(JSONObject message) throws JSONException {
 //        if (message.has(OPTS)) {
 //            JSONObject opts = message.getJSONObject(OPTS);
-        JSONObject opts = message;
 
-        if (opts.has("subscription")) {
-            String subscriptionId = opts.getString("subscription");
+        if (message.has("res")) {
+            String res = message.getString("res");
 
-            if (subscriptionId == null) {
-                // Every push message must have a valid subscription id.
-                Log.e(TAG, "Subscription id of push message is null");
+            if (res == null) {
+                // Every push message must have a valid subscription res.
+                Log.e(TAG, "Subscription res of push message is null");
                 return;
             }
 
-            if (!pushMessageSubscribers.containsKey(subscriptionId)) {
+            if (!pushMessageSubscribers.containsKey(res)) {
                 // It means we have subscription which has no handler.
-                Log.e(TAG, "Push message has no handler for id " + subscriptionId + "\n"
+                Log.e(TAG, "Push message has no handler for res " + res + "\n"
                         + message.toString());
                 return;
             }
 
-            MessageHandler messageHandler = pushMessageSubscribers.get(subscriptionId);
+            MessageHandler messageHandler = pushMessageSubscribers.get(res);
 
             PushMessage.Builder pushMessageBuilder = new PushMessage.Builder();
-            pushMessageBuilder.subscription(subscriptionId);
+            pushMessageBuilder.res(res);
 
             // add self subscription if have one (used for new creation of read request)
 //                if (opts.has(SELF_SUBSCRIPTION) && !opts.getString(SELF_SUBSCRIPTION).equals("null")) {
@@ -320,7 +273,6 @@ public class WebSocketClient {
 //                }
 
             Message.Command masterCmd = null;
-            ResourcePath masterRes = null;
             JSONObject body = null;
 
             if (message.has("cmd")) {
@@ -332,10 +284,10 @@ public class WebSocketClient {
             }
 
             // delete message doesn't have 'res'
-            if (masterCmd != Message.Command.DELETE && message.has("res")) {
-                masterRes = ResourcePath.generateResourcePath(message.getString("res"));
-                pushMessageBuilder.res(masterRes);
-            }
+//            if (masterCmd != Message.Command.DELETE && message.has("res")) {
+//                masterRes = ResourcePath.generateResourcePath(message.getString("res"));
+//                pushMessageBuilder.res(masterRes);
+//            }
 
             if (message.has("body")) {
                 body = message.getJSONObject("body");
@@ -389,27 +341,23 @@ public class WebSocketClient {
     }
 
     /**
-     * Sets a message handler to handle a messages on a certain subscription id
+     * Sets a message handler to handle push messages on a certain res
      *
-     * @param subscriptionId
+     * @param res
      * @param messageHandler
      */
-    public void bindSubscription(String subscriptionId, MessageHandler messageHandler) {
+    public void bindSubscription(String res, MessageHandler messageHandler) {
         if (messageHandler == null) {
-            throw new IllegalArgumentException("messageHandler must not be null");
+            throw new IllegalArgumentException("MessageHandler must not be null");
         }
-        if (subscriptionId == null || subscriptionId.equals("null")) {
-            throw new IllegalArgumentException("subscriptionId must not be null or \"null\"");
+        if (res == null || res.equals("null")) {
+            throw new IllegalArgumentException("Res must not be null or \"null\"");
         }
-        Log.d(TAG, "Handler is bound with the subscription id " + subscriptionId);
-        pushMessageSubscribers.put(subscriptionId, messageHandler);
-        messageHandler.setSubscriptionId(subscriptionId);
-    }
-
-
-    public void disconnect() {
-        if (mConnection.isConnected()) mConnection.disconnect();
-        Log.d(TAG, "Disconnecting...");
+        if (!pushMessageSubscribers.containsKey(res)) {
+            pushMessageSubscribers.put(res, messageHandler);
+            messageHandler.setSubscriptionId(res);
+            Log.d(TAG, "Handler is bound with the subscription res " + res);
+        }
     }
 
     public void setConnectionStatusListener(ConnectionStatusListener connectionStatusListener) {

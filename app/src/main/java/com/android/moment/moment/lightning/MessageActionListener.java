@@ -1,7 +1,4 @@
-package com.android.moment.moment.net.core.handler;
-
-import com.android.moment.moment.net.core.message.MessageError;
-import com.android.moment.moment.net.core.message.PushMessage;
+package com.android.moment.moment.lightning;
 
 /**
  * This is interface for listening the result of the request messages.

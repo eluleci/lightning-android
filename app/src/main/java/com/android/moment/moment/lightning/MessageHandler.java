@@ -1,11 +1,7 @@
-package com.android.moment.moment.net.core.handler;
+package com.android.moment.moment.lightning;
 
 import android.os.Handler;
 import android.os.Looper;
-
-import com.android.moment.moment.net.core.message.Message;
-import com.android.moment.moment.net.core.message.MessageError;
-import com.android.moment.moment.net.core.message.PushMessage;
 
 import org.json.JSONException;
 
@@ -25,7 +21,7 @@ public abstract class MessageHandler<E> {
     /**
      * sets the subscriptionId and registers in WebSocketClient as "handler to be called"
      *
-     * @param id the id to be set and registered
+     * @param id the res to be set and registered
      */
     public void setSubscriptionId(String id) {
         this.subscriptionId = id;
@@ -145,5 +141,9 @@ public abstract class MessageHandler<E> {
      */
     public MessageActionListener getListener() {
         return messageActionListener;
+    }
+
+    public void execute() {
+        WebSocketClient.getInstance().sendMessage(this);
     }
 }

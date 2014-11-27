@@ -1,12 +1,8 @@
-package com.android.moment.moment.net.model.observer;
+package com.android.moment.moment.lightning;
 
-
-import com.android.moment.moment.net.model.Model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Binder is a helper class to collect bindings between FieldObservers
@@ -16,76 +12,55 @@ import java.util.Set;
  */
 public class Binder {
 
-    private Set<Model> models = new HashSet<Model>();
     private List<Binding> bindings = new ArrayList<Binding>();
 
     private List<Binder> rowBinders = new ArrayList<Binder>();
 
     public Binder() {
-        models = new HashSet<Model>();
         bindings = new ArrayList<Binding>();
         rowBinders = new ArrayList<Binder>();
         rowBinders.add(this);
     }
 
-    /**
-     * Binds an Observer to a Observable's Field
-     *
-     * @param observable the Observable to bind to
-     * @param field      the Field of the Observable to bind to
-     * @param observer   the FieldObserver to be updated by Observable
-     * @param <E>        the Type of the Field
-     */
-    public synchronized <E> void bind(FieldsObservable observable, Field<E> field, FieldObserver<? super E> observer) {
-        observable.addFieldObserver(field, observer);
-        bindings.add(new Binding(observable, field, observer));
-        if (observable instanceof Model) {
-            models.add((Model) observable);
-        }
+    public synchronized <E> void bind(LightningObject observable, String key, Observer observer) {
+        observable.addObserver(key, observer);
+        bindings.add(new Binding(observable, key, observer));
     }
 
-    /**
-     * removes all Observers that was added with this Binder.
-     */
-    public synchronized void unbindAll() {
+    /*public synchronized void unbindAll() {
         for (Binding current : bindings) {
             current.observable.removeFieldObserver(current.field, current.fieldObserver);
         }
         bindings.clear();
-    }
+    }*/
 
     /**
      * Returns a Set of all Model objects that this Binder has bound to a FieldObserver.
      *
      * @return Set of models that were bound by this
      */
-    public synchronized Set<Model> getBoundedModels() {
+    /*public synchronized Set<Model> getBoundedModels() {
         return models;
-    }
+    }*/
 
     /**
      * removes all FieldObservers from an Observable object, IF it has been bound with this Binder
      *
      * @param observable the Observable to unbind from
      */
-    public synchronized void unbindAllFromObservable(FieldsObservable observable) {
+    public synchronized void unbindAllFromObservable(LightningObject observable) {
         for (int i = 0, limit = bindings.size(); i < limit; i++) {
             if (bindings.get(i).observable == observable) {
-                bindings.get(i).observable.removeFieldObserver(bindings.get(i).field, bindings.get(i).fieldObserver);
+                bindings.get(i).observable.removeObserver(bindings.get(i).key, bindings.get(i).observer);
                 bindings.remove(bindings.get(i));
             }
         }
     }
 
-    /**
-     * removes a FieldObserver from its Observable Field, IF it has been bound with this Binder.
-     *
-     * @param observer the FieldObserver that should be unbind
-     */
-    public synchronized boolean unbind(FieldObserver observer) {
+    public synchronized boolean unbind(Observer observer) {
         for (int i = 0, limit = bindings.size(); i < limit; i++) {
-            if (bindings.get(i).fieldObserver == observer) {
-                bindings.get(i).observable.removeFieldObserver(bindings.get(i).field, observer);
+            if (bindings.get(i).observer == observer) {
+                bindings.get(i).observable.removeObserver(bindings.get(i).key, observer);
                 bindings.remove(bindings.get(i));
                 return true;
             }
@@ -97,15 +72,16 @@ public class Binder {
      * Class for storing bindings.
      */
     private static class Binding {
-        Binding(FieldsObservable observable, Field field, FieldObserver observer) {
-            this.field = field;
+
+        Binding(LightningObject observable, String key, Observer observer) {
             this.observable = observable;
-            this.fieldObserver = observer;
+            this.key = key;
+            this.observer = observer;
         }
 
-        private FieldsObservable observable;
-        private Field field;
-        private FieldObserver fieldObserver;
+        private LightningObject observable;
+        private String key;
+        private Observer observer;
     }
 
     /**

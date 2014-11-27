@@ -4,6 +4,11 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <com.android.moment.moment.views.CustomTextView
+        android:id="@+id/counter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <GridView
         android:id="@+id/gridview"
         android:layout_width="match_parent"

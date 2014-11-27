@@ -1,8 +1,8 @@
-package com.android.moment.moment.net.core.message;
-
-import org.json.JSONObject;
+package com.android.moment.moment.lightning;
 
 import com.google.gson.Gson;
+
+import org.json.JSONObject;
 
 /**
  * This class stores the data for message errors. Types of the errors are

@@ -4,13 +4,12 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
-import com.android.moment.moment.net.model.observer.Field;
-import com.android.moment.moment.net.model.observer.FieldObserver;
+import com.android.moment.moment.lightning.Observer;
 
 /**
  * Created by eluleci on 10/11/14.
  */
-public class CustomTextView extends TextView implements FieldObserver<String> {
+public class CustomTextView extends TextView implements Observer {
 
     public CustomTextView(Context context) {
         super(context);
@@ -25,7 +24,8 @@ public class CustomTextView extends TextView implements FieldObserver<String> {
     }
 
     @Override
-    public void updateData(Field<String> field, String data) {
-        if (data != null) setText(data);
+    public void update(String key, Object value) {
+        if (value != null && value instanceof String) setText(value.toString());
+        if (value != null && value instanceof Integer) setText(Integer.toString((Integer) value));
     }
 }

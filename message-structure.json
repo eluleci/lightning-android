@@ -1,0 +1,43 @@
+
+/* request message */
+{
+    "rid": "REQUEST_ID",
+    "method": "METHOD",
+    "headers": {
+        "header": "value"
+    }
+    "relative_url": "METHOD",
+    "parameters": {
+        "key": "value"
+    }
+}
+
+
+/* response message */
+{
+    "rid": "REQUEST_ID",
+    "headers": {
+        "header": "value"
+    },
+    "body": {
+        "name": "Emir"
+    }
+}
+
+
+
+
+
+
+/* response message */
+{
+    "subscription": "REQUEST_ID",
+    "method": "METHOD",
+    "headers": {
+        "header": "value"
+    }
+    "relative_url": "METHOD",
+    "parameters": {
+        "name": "Emir"
+    }
+}
