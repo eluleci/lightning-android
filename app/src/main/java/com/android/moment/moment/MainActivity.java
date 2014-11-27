@@ -38,83 +38,82 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
 
     private static final String TAG = "MainActivity";
     private static final int RESULT_LOAD_IMAGE = 23;
-    private int connectionRetryCount = 0;
+    private int connectionRetryCount = 10;
     static boolean active = false;
 
     private LightningObjectList profileList;
     private Binder binder;
 
     private LightningObject selectedProfile;
+    private Observer listObserver;
 
-    private Observer observer;
+    private GridView gridview;
+    private ImageAdapter imageAdapter = new ImageAdapter();
+
+    /*private Handler reconnectHandler = new Handler();
+    private Runnable connectTask = new Runnable() {
+        public void run() {
+            String message = "Connection lost. Connecting #" + connectionRetryCount;
+            Log.d(TAG, message);
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+
+            WebSocketClient.getInstance().connect();
+            reconnectHandler.postDelayed(connectTask, 3000);
+        }
+    };*/
 
     /**
      * @param savedInstanceState
      */
-    private GridView gridview;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(TAG, "onCreate()");
 
-        /**
-         * Initialising UI
-         */
-//        gridview = (GridView) findViewById(R.id.gridview);
+
+        listObserver = new Observer() {
+            @Override
+            public void update(String key, Object value) {
+                Log.d(TAG, "list size changed to " + profileList.size());
+                getActionBar().setTitle("#" + profileList.size());
+                Log.d(TAG, gridview.toString());
+                imageAdapter.notifyDataSetChanged();
+                gridview.invalidateViews();
+            }
+        };
 
         // listening connection status changes of web socket connection
         WebSocketClient.getInstance().setConnectionStatusListener(this);
+        WebSocketClient.getInstance().connect();
         binder = new Binder();
 
         // adding observer for list size. notifies list adapter when size changes
         profileList = new LightningObjectList("Profile");
+        profileList.addObserver(listObserver);
 
-        if (WebSocketClient.getInstance().isConnected()) {
-            // getting list if connection is already open
-            profileList.fetch();
-        } else {
-            // Connecting to we socket server.
-            profileList.clear();
-            WebSocketClient.getInstance().connect();
-        }
-
+        /**
+         * Initialising UI
+         */
+        gridview = (GridView) findViewById(R.id.gridview);
+        gridview.setAdapter(imageAdapter);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(TAG, "onStart()");
         active = true;
-
-        Log.d(TAG, "obs null?? " + (observer == null));
-        observer = new Observer() {
-            @Override
-            public void update(String key, Object value) {
-                Log.d(TAG, "1 action bar title " + getActionBar().getTitle());
-                Log.d(TAG, "list size changed to #" + value);
-                getActionBar().setTitle("#" + value);
-                Log.d(TAG, "2 action bar title " + getActionBar().getTitle());
-            }
-        };
-        profileList.addObserver(observer);
-        profileList.addObserver((CustomTextView) findViewById(R.id.counter));
     }
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume()");
         super.onResume();
     }
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onDestroy()");
         super.onStop();
         active = false;
-        observer = null;
-//        WebSocketClient.getInstance().disconnect();
+        WebSocketClient.getInstance().disconnect();
     }
 
     @Override
@@ -220,17 +219,19 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
 
     @Override
     public void onStatusChanged(boolean connected) {
-        if (connected) {
-            Log.d(TAG, "Connection established.");
 
-            if (profileList.size() == 0) {
-                Log.d(TAG, "Getting Profiles.");
-                profileList.fetch();
-            }
-        } else if (active && ++connectionRetryCount <= 3) {
-            Log.d(TAG, "Trying to reconnect #" + connectionRetryCount);
-            WebSocketClient.getInstance().connect();
+        Log.d(TAG, "Connection status changed to " + connected);
+        if (connected) {
+            Log.d(TAG, "Connection established. Getting Profiles.");
+            profileList.clear();
+            profileList.fetch();
+//            reconnectHandler.removeCallbacks(connectTask);  // stop reconnect task
+//            connectionRetryCount = 10;
+
         }
+      /*  else if (active && --connectionRetryCount >= 0) {
+            connectTask.run();
+        }*/
     }
 
     public class ImageAdapter extends BaseAdapter {
@@ -252,7 +253,6 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
-            System.out.println("Getting view for " + position);
             final LightningObject profile = profileList.get(position);
 
             convertView = MainActivity.this.getLayoutInflater().inflate(R.layout.profile_grid, parent, false);

@@ -25,7 +25,7 @@ public class WebSocketClient {
     private Map<String, MessageHandler> pushMessageSubscribers = new HashMap<String, MessageHandler>();
 
     //    private final String wsuri = "ws://192.168.1.15:8080/ws";
-        private final String wsuri = "ws://10.0.2.137:8080/ws";
+    private final String wsuri = "ws://10.0.2.137:8080/ws";
 //    private final String wsuri = "ws://192.168.43.76:8080/ws";
 
     private static WebSocketClient instance;
@@ -40,7 +40,10 @@ public class WebSocketClient {
     private SecureRandom random = new SecureRandom();
 
     public static WebSocketClient getInstance() {
-        if (instance == null) instance = new WebSocketClient();
+        if (instance == null) {
+            instance = new WebSocketClient();
+            Log.e("WebSocketClient", "created new wsc");
+        }
         return instance;
     }
 
@@ -87,10 +90,13 @@ public class WebSocketClient {
     }
 
     public void disconnect() {
-        // sending disconnect message
-        Log.d(TAG, "Disconnecting.");
-        Message message = new Message.Builder().cmd(Message.Command.DISCONNECT).build();
-        mConnection.sendTextMessage(message.toString());
+        if (mConnection.isConnected()) {
+            // sending disconnect message
+            Log.d(TAG, "Disconnecting.");
+            Message message = new Message.Builder().cmd(Message.Command.DISCONNECT).build();
+            mConnection.sendTextMessage(message.toString());
+            instance = null;
+        }
     }
 
     /**
