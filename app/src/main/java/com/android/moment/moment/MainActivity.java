@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -41,7 +40,6 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
     private static final String TAG = "MainActivity";
     private static final int RESULT_LOAD_IMAGE = 23;
     static boolean active;
-    private boolean isConnecting;
 
     private Lightning lightning = new Lightning();
     private LightningObjectList profileList;
@@ -52,21 +50,6 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
 
     private GridView gridview;
     private ImageAdapter imageAdapter = new ImageAdapter();
-
-    private Handler reconnectHandler = new Handler();
-    private Runnable connectTask = new Runnable() {
-        public void run() {
-            if (WebSocketClient.getInstance().isConnected()) return;
-
-            String message = "Connecting...";
-            Log.d(TAG, message);
-            getActionBar().setTitle(message);
-            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-
-            WebSocketClient.getInstance().connect();
-            reconnectHandler.postDelayed(connectTask, 5000);
-        }
-    };
 
     /**
      * @param savedInstanceState
@@ -93,8 +76,8 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
         };
 
         // listening connection status changes of web socket connection
-        WebSocketClient.getInstance().setConnectionStatusListener(this);
-        WebSocketClient.getInstance().connect();
+        lightning.setConnectionStatusListener(this);
+        lightning.connect();
         binder = new Binder();
 
         // adding observer for list size. notifies list adapter when size changes
@@ -117,12 +100,10 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
             profileList.clear();
             profileList.fetch();
             getActionBar().setTitle("Getting list");
-            reconnectHandler.removeCallbacks(connectTask);  // stop reconnect task
-            isConnecting = false;
 
-        } else if (active && !isConnecting) {
-            isConnecting = true;
-            connectTask.run();
+        } else {
+            Log.d(TAG, "Connection lost. Connecting...");
+            getActionBar().setTitle("Connection lost. Connecting...");
         }
     }
 
@@ -141,7 +122,7 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
     protected void onDestroy() {
         super.onStop();
         active = false;
-        WebSocketClient.getInstance().disconnect();
+        lightning.disconnect();
     }
 
     @Override
