@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
-import com.android.moment.moment.lightning.Observer;
+import com.android.moment.moment.lightning.model.Observer;
 
 /**
  * Created by eluleci on 10/11/14.

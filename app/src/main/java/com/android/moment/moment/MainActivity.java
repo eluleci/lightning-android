@@ -19,12 +19,12 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.android.moment.moment.lightning.Binder;
-import com.android.moment.moment.lightning.Lightning;
-import com.android.moment.moment.lightning.LightningObject;
-import com.android.moment.moment.lightning.LightningObjectList;
-import com.android.moment.moment.lightning.Observer;
-import com.android.moment.moment.lightning.WebSocketClient;
+import com.android.moment.moment.lightning.model.Binder;
+import com.android.moment.moment.lightning.model.Lightning;
+import com.android.moment.moment.lightning.model.LightningObject;
+import com.android.moment.moment.lightning.model.LightningObjectList;
+import com.android.moment.moment.lightning.model.Observer;
+import com.android.moment.moment.lightning.net.WebSocketClient;
 import com.android.moment.moment.views.CustomImageView;
 import com.android.moment.moment.views.CustomTextView;
 import com.parse.ParseFile;

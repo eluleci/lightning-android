@@ -7,7 +7,7 @@ import android.util.AttributeSet;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
-import com.android.moment.moment.lightning.Observer;
+import com.android.moment.moment.lightning.model.Observer;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
