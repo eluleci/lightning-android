@@ -16,6 +16,8 @@ import java.util.ListIterator;
 public class LightningObjectList implements List<LightningObject> {
 
     private static final String TAG = "LightningObjectList";
+    private Lightning lightning;
+
     private List<LightningObject> list;
 
     protected final String res;
@@ -23,6 +25,14 @@ public class LightningObjectList implements List<LightningObject> {
 
     private LOListHandler listHandler;
     private List<Observer> observers;
+
+    public Lightning getLightning() {
+        return lightning;
+    }
+
+    public void setLightning(Lightning lightning) {
+        this.lightning = lightning;
+    }
 
     public void addObserver(Observer o) {
         observers.add(o);
@@ -40,7 +50,7 @@ public class LightningObjectList implements List<LightningObject> {
         }
     }
 
-    public LightningObjectList(String res) {
+    protected LightningObjectList(String res) {
         this.res = res;
         this.list = new ArrayList<LightningObject>();
         this.observers = new ArrayList<Observer>();

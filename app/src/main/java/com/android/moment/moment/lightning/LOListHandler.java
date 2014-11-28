@@ -39,7 +39,7 @@ public class LOListHandler extends MessageHandler<List<LightningObject>> {
 
     @Override
     public Message prepareMessage() {
-
+        System.out.println(model.getLightning().toString());
         return message;
     }
 
@@ -70,7 +70,8 @@ public class LOListHandler extends MessageHandler<List<LightningObject>> {
             Log.d(TAG, "Push message is an object creation message. s: " + model.size());
 
             // this is a new object that is created by some other person
-            LightningObject lightningObject = new LightningObject(pushMessage.getBody());
+            LightningObject lightningObject = model.getLightning().getObject(pushMessage.getBody().getString("res"));
+            lightningObject.setBody(pushMessage.getBody());
             if (model.add(lightningObject)) {
                 Log.d(TAG, "Added new item to the list " + lightningObject.getRes() + ", s: " + model.size());
             }
@@ -89,7 +90,8 @@ public class LOListHandler extends MessageHandler<List<LightningObject>> {
         List<LightningObject> list = new ArrayList<LightningObject>();
         for (int i = 0; i < array.length(); i++) {
             JSONObject body = array.getJSONObject(i);
-            LightningObject lightningObject = new LightningObject(body);
+            LightningObject lightningObject = model.getLightning().getObject(body.getString("res"));
+            lightningObject.setBody(body);
             list.add(lightningObject);
             Log.d(TAG, "item: " + lightningObject.getRes());
         }

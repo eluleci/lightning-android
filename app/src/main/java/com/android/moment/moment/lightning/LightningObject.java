@@ -21,6 +21,8 @@ public class LightningObject {
     private final String TAG = "LightningObject:";
     private boolean syncing = false;
 
+    private Lightning lightning;
+
     protected String res;
     protected String id;
     protected JSONObject body = new JSONObject();
@@ -29,7 +31,10 @@ public class LightningObject {
 
     private LOHandler dataHandler = new LOHandler(this);
 
-    public LightningObject(String className) {
+    protected LightningObject() {
+    }
+
+    protected LightningObject(String className) {
         this.body = new JSONObject();
         try {
             this.body.put("className", className);
@@ -106,6 +111,7 @@ public class LightningObject {
 
     public void setRes(String res) {
         this.res = res;
+        lightning.register(this);
         WebSocketClient.getInstance().bindSubscription(res, dataHandler);
     }
 
@@ -272,5 +278,9 @@ public class LightningObject {
             dataHandler.sendSaveMessage(unsavedChanges);
 
         }
+    }
+
+    public void setLightning(Lightning lightning) {
+        this.lightning = lightning;
     }
 }

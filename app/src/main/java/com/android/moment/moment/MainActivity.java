@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.moment.moment.lightning.Binder;
+import com.android.moment.moment.lightning.Lightning;
 import com.android.moment.moment.lightning.LightningObject;
 import com.android.moment.moment.lightning.LightningObjectList;
 import com.android.moment.moment.lightning.Observer;
@@ -42,10 +43,11 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
     static boolean active;
     private boolean isConnecting;
 
+    private Lightning lightning = new Lightning();
     private LightningObjectList profileList;
     private Binder binder;
 
-    private LightningObject selectedProfile;
+    private String selectedProfileRes;
     private Observer listObserver;
 
     private GridView gridview;
@@ -96,7 +98,7 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
         binder = new Binder();
 
         // adding observer for list size. notifies list adapter when size changes
-        profileList = new LightningObjectList("Profile");
+        profileList = lightning.getList("Profile");
         profileList.addObserver(listObserver);
 
         /**
@@ -158,7 +160,7 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
 
         if (id == R.id.action_join) {
 
-            LightningObject profile = new LightningObject("Profile");
+            LightningObject profile = lightning.createObject("Profile");
             profile.set("name", "Ahmet İsmail Yalçınkaya");
             profile.set("avatar", "https://graph.facebook.com/eluleci/picture?type=large");
             profile.addObserver("res", new Observer() {
@@ -229,6 +231,7 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
                 @Override
                 public void done(com.parse.ParseException e) {
                     Log.d(TAG, "Image is uploaded. URL: " + file.getUrl());
+                    LightningObject selectedProfile = lightning.getObject(selectedProfileRes);
                     selectedProfile.set("avatar", file.getUrl());
                     selectedProfile.save();
                 }
@@ -281,7 +284,7 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
             convertView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    selectedProfile = profile;
+                    selectedProfileRes = profile.getRes();
                     openSelectImageIntent();
                 }
             });
