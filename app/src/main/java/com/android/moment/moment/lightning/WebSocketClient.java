@@ -25,8 +25,9 @@ public class WebSocketClient {
     private Map<String, MessageHandler> pushMessageSubscribers = new HashMap<String, MessageHandler>();
 
     //    private final String wsuri = "ws://192.168.1.15:8080/ws";
-    private final String wsuri = "ws://10.0.2.137:8080/ws";
-//    private final String wsuri = "ws://192.168.43.76:8080/ws";
+    //    private final String wsuri = "ws://10.0.2.137:8080/ws";
+    //    private final String wsuri = "ws://192.168.43.76:8080/ws";
+    private final String wsuri = "ws://uekk53169e3d.eluleci.koding.io:8080/ws";
 
     private static WebSocketClient instance;
 

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -38,8 +39,8 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
 
     private static final String TAG = "MainActivity";
     private static final int RESULT_LOAD_IMAGE = 23;
-    private int connectionRetryCount = 10;
-    static boolean active = false;
+    static boolean active;
+    private boolean isConnecting;
 
     private LightningObjectList profileList;
     private Binder binder;
@@ -50,17 +51,20 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
     private GridView gridview;
     private ImageAdapter imageAdapter = new ImageAdapter();
 
-    /*private Handler reconnectHandler = new Handler();
+    private Handler reconnectHandler = new Handler();
     private Runnable connectTask = new Runnable() {
         public void run() {
-            String message = "Connection lost. Connecting #" + connectionRetryCount;
+            if (WebSocketClient.getInstance().isConnected()) return;
+
+            String message = "Connecting...";
             Log.d(TAG, message);
+            getActionBar().setTitle(message);
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 
             WebSocketClient.getInstance().connect();
-            reconnectHandler.postDelayed(connectTask, 3000);
+            reconnectHandler.postDelayed(connectTask, 5000);
         }
-    };*/
+    };
 
     /**
      * @param savedInstanceState
@@ -74,8 +78,12 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
         listObserver = new Observer() {
             @Override
             public void update(String key, Object value) {
-                Log.d(TAG, "list size changed to " + profileList.size());
-                getActionBar().setTitle("#" + profileList.size());
+                if (profileList.size() == 0)
+                    getActionBar().setTitle("List is empty");
+                else if (profileList.size() == 1)
+                    getActionBar().setTitle(profileList.size() + " person");
+                else
+                    getActionBar().setTitle(profileList.size() + " people");
                 Log.d(TAG, gridview.toString());
                 imageAdapter.notifyDataSetChanged();
                 gridview.invalidateViews();
@@ -96,6 +104,24 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
          */
         gridview = (GridView) findViewById(R.id.gridview);
         gridview.setAdapter(imageAdapter);
+    }
+
+    @Override
+    public void onStatusChanged(boolean connected) {
+
+        Log.d(TAG, "Connection status changed to " + connected);
+        if (connected) {
+            Log.d(TAG, "Connection established. Getting Profiles.");
+            profileList.clear();
+            profileList.fetch();
+            getActionBar().setTitle("Getting list");
+            reconnectHandler.removeCallbacks(connectTask);  // stop reconnect task
+            isConnecting = false;
+
+        } else if (active && !isConnecting) {
+            isConnecting = true;
+            connectTask.run();
+        }
     }
 
     @Override
@@ -217,22 +243,6 @@ public class MainActivity extends Activity implements WebSocketClient.Connection
         startActivityForResult(i, RESULT_LOAD_IMAGE);
     }
 
-    @Override
-    public void onStatusChanged(boolean connected) {
-
-        Log.d(TAG, "Connection status changed to " + connected);
-        if (connected) {
-            Log.d(TAG, "Connection established. Getting Profiles.");
-            profileList.clear();
-            profileList.fetch();
-//            reconnectHandler.removeCallbacks(connectTask);  // stop reconnect task
-//            connectionRetryCount = 10;
-
-        }
-      /*  else if (active && --connectionRetryCount >= 0) {
-            connectTask.run();
-        }*/
-    }
 
     public class ImageAdapter extends BaseAdapter {
 
