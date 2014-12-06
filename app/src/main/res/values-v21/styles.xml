@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!--<style name="AppTheme" parent="android:Theme.Material.Light">-->
-    <!--</style>-->
+
+    <style name="AppTheme" parent="android:Theme.Material.Light">
+
+        <item name="android:colorPrimary">@color/primary_color</item>
+        <item name="android:colorPrimaryDark">@color/primarydark_color</item>
+        <item name="android:colorAccent">@color/primary_color</item>
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <!--<item name="android:actionBarStyle">@style/ActionBarTheme</item>-->
+    </style>
+
+    <style name="ActionBarTheme" parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/primary_color</item>
+    </style>
+
 </resources>

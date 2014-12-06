@@ -14,17 +14,31 @@ import com.squareup.picasso.Target;
 /**
  * Created by eluleci on 10/11/14.
  */
-public class CustomImageView extends ImageView implements Observer<String>, Target {
+public class UrlImageView extends ImageView implements Observer<String>, Target {
 
-    public CustomImageView(Context context) {
+    private String url;
+
+    @Override
+    public void update(String key, String value) {
+        if (url == null || (value != null && !url.equals(value))) {
+            if (url != null) {
+                // animate the view only for the first time
+                animate().alpha(0.3f).setDuration(300).start();
+            }
+            url = value;
+            Picasso.with(getContext()).load(url).into((Target) this);
+        }
+    }
+
+    public UrlImageView(Context context) {
         super(context);
     }
 
-    public CustomImageView(Context context, AttributeSet attrs) {
+    public UrlImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public CustomImageView(Context context, AttributeSet attrs, int defStyle) {
+    public UrlImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
@@ -38,6 +52,7 @@ public class CustomImageView extends ImageView implements Observer<String>, Targ
     @Override
     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
         setImageBitmap(bitmap);
+        animate().alpha(1).setDuration(300).start();
     }
 
     @Override
@@ -48,11 +63,6 @@ public class CustomImageView extends ImageView implements Observer<String>, Targ
     @Override
     public void onPrepareLoad(Drawable placeHolderDrawable) {
 
-    }
-
-    @Override
-    public void update(String key, String value) {
-        if (value != null) Picasso.with(getContext()).load(value).into((Target) this);
     }
 
     public class ReverseInterpolator implements Interpolator {

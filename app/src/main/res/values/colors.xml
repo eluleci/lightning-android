@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#ffffff</color>
+    <color name="transculent_background">#eeffffff</color>
+
+    <color name="primary_color">#3498db</color>
+    <color name="primarydark_color">#2980b9</color>
+    <color name="secondary_color">#f39c12</color>
+
+    <!-- Sale List Page -->
+    <color name="bg_description">#eeffffff</color>
+    <color name="bg_date_separator">#33000000</color>
+
+    <!-- Brand List Page (Notification) -->
+    <color name="brand_name">#ff7e8488</color>
+</resources>

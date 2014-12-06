@@ -5,8 +5,4 @@
         android:id="@+id/action_join"
         android:title="@string/action_join"
         android:showAsAction="always" />
-    <item
-        android:id="@+id/action_pick"
-        android:title="@string/action_pick"
-        android:showAsAction="always" />
 </menu>
